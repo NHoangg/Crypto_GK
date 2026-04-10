@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block content %}
+<section>
+  <h2>Danh sách chứng từ đã đăng ký</h2>
+  {% if documents %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>File</th>
+          <th>Hash (SHA-256)</th>
+          <th>Chủ sở hữu hiện tại</th>
+          <th>Người khởi tạo</th>
+          <th>Timestamp</th>
+          <th>Transfer</th>
+          <th>Hành động</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doc in documents %}
+          <tr>
+            <td>{{ doc.id }}</td>
+            <td><a href="{{ url_for('uploaded_file', filename=doc.filename) }}">{{ doc.filename }}</a></td>
+            <td class="mono">{{ doc.file_hash[:18] }}...</td>
+            <td>{{ doc.owner }}</td>
+            <td>{{ doc.creator }}</td>
+            <td>{{ doc.created_at }}</td>
+            <td>{{ doc.transfer_count }}</td>
+            <td>
+              <a href="{{ url_for('document_detail', doc_id=doc.id) }}">Chi tiết</a> |
+              <a href="{{ url_for('transfer_ownership', doc_id=doc.id) }}">Chuyển quyền</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>Chưa có chứng từ nào. Hãy bắt đầu bằng việc đăng ký PDF đầu tiên.</p>
+  {% endif %}
+</section>
+{% endblock %}

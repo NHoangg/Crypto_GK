@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<section>
+  <h2>Đăng ký chứng từ tài chính</h2>
+  <p>Tính năng: <strong>Digital Fingerprinting + Proof of Existence</strong>.</p>
+  <form method="post" enctype="multipart/form-data">
+    <label>Người khởi tạo
+      <input type="text" name="creator" placeholder="VD: Cong ty XNK ABC" required />
+    </label>
+    <label>Chủ sở hữu ban đầu
+      <input type="text" name="owner" placeholder="VD: Ngan hang A" required />
+    </label>
+    <label>Tệp PDF chứng từ
+      <input type="file" name="pdf" accept="application/pdf" required />
+    </label>
+    <button type="submit">Tạo fingerprint và ghi sổ cái</button>
+  </form>
+</section>
+{% endblock %}
