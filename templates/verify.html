@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<section>
+  <h2>Xác thực chứng từ</h2>
+  <p>Tải lên lại file PDF để kiểm tra hash có khớp với sổ cái không.</p>
+  <form method="post" enctype="multipart/form-data">
+    <label>Tệp PDF cần xác thực
+      <input type="file" name="pdf" accept="application/pdf" required />
+    </label>
+    <button type="submit">Xác thực</button>
+  </form>
+
+  {% if result %}
+  <article class="result ok">
+    <h3>✅ Chứng từ hợp lệ trên hệ thống</h3>
+    <ul>
+      <li><strong>ID chứng từ:</strong> {{ result.id }}</li>
+      <li><strong>File hash:</strong> <span class="mono">{{ result.file_hash }}</span></li>
+      <li><strong>Người khởi tạo:</strong> {{ result.creator }}</li>
+      <li><strong>Chủ sở hữu hiện tại:</strong> {{ result.owner }}</li>
+      <li><strong>Timestamp đăng ký:</strong> {{ result.chain_timestamp }}</li>
+      <li><strong>Tx hash:</strong> <span class="mono">{{ result.tx_hash }}</span></li>
+    </ul>
+  </article>
+  {% endif %}
+</section>
+{% endblock %}

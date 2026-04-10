@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<section>
+  <h2>Chuyển quyền sở hữu chứng từ #{{ document.id }}</h2>
+  <ul>
+    <li><strong>Hash:</strong> <span class="mono">{{ document.file_hash }}</span></li>
+    <li><strong>Chủ hiện tại:</strong> {{ document.owner }}</li>
+  </ul>
+
+  <form method="post">
+    <label>Chủ sở hữu mới
+      <input type="text" name="new_owner" placeholder="VD: Quy dau tu B" required />
+    </label>
+    <button type="submit">Xác nhận chuyển quyền</button>
+  </form>
+</section>
+{% endblock %}
