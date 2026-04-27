@@ -1,17 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
 <section>
-  <h2>Chuyển quyền sở hữu chứng từ #{{ document.id }}</h2>
-  <ul>
-    <li><strong>Hash:</strong> <span class="mono">{{ document.file_hash }}</span></li>
-    <li><strong>Chủ hiện tại:</strong> {{ document.owner }}</li>
+  <h2><i class="ph-fill ph-arrows-left-right"></i> Chuyển quyền sở hữu <span class="badge badge-blue" style="margin-left: 8px;">#{{ document.id }}</span></h2>
+  
+  <ul class="detail-list" style="margin-bottom: 2rem;">
+    <li>
+      <strong><i class="ph ph-hash"></i> Mã băm (Hash)</strong>
+      <span class="mono">{{ document.file_hash }}</span>
+    </li>
+    <li>
+      <strong><i class="ph ph-user-focus"></i> Chủ hiện tại</strong>
+      <span>{{ document.owner }}</span>
+    </li>
   </ul>
 
   <form method="post">
-    <label>Chủ sở hữu mới
-      <input type="text" name="new_owner" placeholder="VD: Quy dau tu B" required />
+    <label>
+      <span><i class="ph ph-user-plus"></i> Chủ sở hữu mới</span>
+      <input type="text" name="new_owner" placeholder="VD: Quỹ đầu tư VinaCapital" required />
     </label>
-    <button type="submit">Xác nhận chuyển quyền</button>
+    <button type="submit"><i class="ph ph-check-circle"></i> Xác nhận chuyển quyền</button>
   </form>
 </section>
 {% endblock %}

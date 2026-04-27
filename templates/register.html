@@ -1,19 +1,23 @@
 {% extends 'base.html' %}
 {% block content %}
 <section>
-  <h2>Đăng ký chứng từ tài chính</h2>
-  <p>Tính năng: <strong>Digital Fingerprinting + Proof of Existence</strong>.</p>
+  <h2><i class="ph-fill ph-file-plus"></i> Đăng ký chứng từ tài chính</h2>
+  <p>Tính năng: <strong>Digital Fingerprinting + Proof of Existence</strong> trên mạng thử nghiệm.</p>
+  
   <form method="post" enctype="multipart/form-data">
-    <label>Người khởi tạo
-      <input type="text" name="creator" placeholder="VD: Cong ty XNK ABC" required />
+    <label>
+      <span><i class="ph ph-user"></i> Người khởi tạo</span>
+      <input type="text" name="creator" placeholder="VD: Công ty XNK ABC" required />
     </label>
-    <label>Chủ sở hữu ban đầu
-      <input type="text" name="owner" placeholder="VD: Ngan hang A" required />
+    <label>
+      <span><i class="ph ph-user-focus"></i> Chủ sở hữu ban đầu</span>
+      <input type="text" name="owner" placeholder="VD: Ngân hàng Á Châu" required />
     </label>
-    <label>Tệp PDF chứng từ
+    <label>
+      <span><i class="ph ph-file-pdf"></i> Tệp PDF chứng từ</span>
       <input type="file" name="pdf" accept="application/pdf" required />
     </label>
-    <button type="submit">Tạo fingerprint và ghi sổ cái</button>
+    <button type="submit"><i class="ph ph-fingerprint"></i> Tạo fingerprint & Ghi sổ cái</button>
   </form>
 </section>
 {% endblock %}

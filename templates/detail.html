@@ -1,18 +1,40 @@
 {% extends 'base.html' %}
 {% block content %}
 <section>
-  <h2>Chi tiết chứng từ #{{ document.id }}</h2>
-  <ul>
-    <li><strong>File:</strong> <a href="{{ url_for('uploaded_file', filename=document.filename) }}">{{ document.filename }}</a></li>
-    <li><strong>Hash:</strong> <span class="mono">{{ document.file_hash }}</span></li>
-    <li><strong>Người khởi tạo:</strong> {{ document.creator }}</li>
-    <li><strong>Chủ sở hữu hiện tại:</strong> {{ document.owner }}</li>
-    <li><strong>Tx hash đăng ký:</strong> <span class="mono">{{ document.tx_hash }}</span></li>
-    <li><strong>Block index:</strong> {{ document.block_index }}</li>
-    <li><strong>Thời điểm tạo:</strong> {{ document.created_at }}</li>
+  <h2><i class="ph-fill ph-file-text"></i> Chi tiết chứng từ <span class="badge badge-blue" style="margin-left: 8px;">#{{ document.id }}</span></h2>
+  
+  <ul class="detail-list">
+    <li>
+      <strong><i class="ph ph-file-pdf"></i> File đính kèm</strong>
+      <a href="{{ url_for('uploaded_file', filename=document.filename) }}">{{ document.filename }}</a>
+    </li>
+    <li>
+      <strong><i class="ph ph-hash"></i> Mã băm (Hash)</strong>
+      <span class="mono">{{ document.file_hash }}</span>
+    </li>
+    <li>
+      <strong><i class="ph ph-user"></i> Người khởi tạo</strong>
+      <span>{{ document.creator }}</span>
+    </li>
+    <li>
+      <strong><i class="ph ph-user-focus"></i> Chủ sở hữu hiện tại</strong>
+      <span>{{ document.owner }}</span>
+    </li>
+    <li>
+      <strong><i class="ph ph-link"></i> Tx Hash đăng ký</strong>
+      <span class="mono">{{ document.tx_hash }}</span>
+    </li>
+    <li>
+      <strong><i class="ph ph-cube"></i> Block Index</strong>
+      <span>{{ document.block_index }}</span>
+    </li>
+    <li>
+      <strong><i class="ph ph-clock"></i> Thời điểm tạo</strong>
+      <span>{{ document.created_at }}</span>
+    </li>
   </ul>
 
-  <h3>Lịch sử chuyển quyền sở hữu</h3>
+  <h3><i class="ph-fill ph-clock-counter-clockwise"></i> Lịch sử chuyển quyền sở hữu</h3>
   {% if transfers %}
     <table>
       <thead>
@@ -28,18 +50,26 @@
       <tbody>
         {% for t in transfers %}
         <tr>
-          <td>{{ loop.index }}</td>
+          <td><span class="badge badge-purple">{{ loop.index }}</span></td>
           <td>{{ t.from_owner }}</td>
           <td>{{ t.to_owner }}</td>
-          <td>{{ t.transferred_at }}</td>
+          <td>{{ t.transferred_at[:16] }}</td>
           <td>{{ t.block_index }}</td>
-          <td class="mono">{{ t.tx_hash[:18] }}...</td>
+          <td><span class="mono">{{ t.tx_hash[:16] }}...</span></td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   {% else %}
-    <p>Chưa có giao dịch chuyển quyền nào.</p>
+    <div class="empty-state" style="padding: 2rem;">
+      <i class="ph ph-swap"></i>
+      <p>Chưa có giao dịch chuyển quyền nào.</p>
+    </div>
   {% endif %}
+  
+  <div style="margin-top: 2rem;">
+    <a href="{{ url_for('index') }}" class="action-btn"><i class="ph ph-arrow-left"></i> Quay lại</a>
+    <a href="{{ url_for('transfer_ownership', doc_id=document.id) }}" class="action-btn"><i class="ph ph-arrows-left-right"></i> Chuyển quyền</a>
+  </div>
 </section>
 {% endblock %}

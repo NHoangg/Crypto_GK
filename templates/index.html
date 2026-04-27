@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <section>
-  <h2>Danh sách chứng từ đã đăng ký</h2>
+  <h2><i class="ph-fill ph-files"></i> Danh sách chứng từ đã đăng ký</h2>
   {% if documents %}
     <table>
       <thead>
@@ -11,31 +11,37 @@
           <th>Hash (SHA-256)</th>
           <th>Chủ sở hữu hiện tại</th>
           <th>Người khởi tạo</th>
-          <th>Timestamp</th>
-          <th>Transfer</th>
+          <th>Ngày tạo</th>
+          <th>Transfers</th>
           <th>Hành động</th>
         </tr>
       </thead>
       <tbody>
         {% for doc in documents %}
           <tr>
-            <td>{{ doc.id }}</td>
-            <td><a href="{{ url_for('uploaded_file', filename=doc.filename) }}">{{ doc.filename }}</a></td>
-            <td class="mono">{{ doc.file_hash[:18] }}...</td>
+            <td><span class="badge badge-blue">#{{ doc.id }}</span></td>
+            <td><a href="{{ url_for('uploaded_file', filename=doc.filename) }}"><i class="ph ph-file-pdf" style="margin-right: 4px;"></i>{{ doc.filename }}</a></td>
+            <td><span class="mono">{{ doc.file_hash[:12] }}...</span></td>
             <td>{{ doc.owner }}</td>
             <td>{{ doc.creator }}</td>
-            <td>{{ doc.created_at }}</td>
-            <td>{{ doc.transfer_count }}</td>
+            <td>{{ doc.created_at[:16] }}</td>
+            <td><span class="badge badge-purple">{{ doc.transfer_count }}</span></td>
             <td>
-              <a href="{{ url_for('document_detail', doc_id=doc.id) }}">Chi tiết</a> |
-              <a href="{{ url_for('transfer_ownership', doc_id=doc.id) }}">Chuyển quyền</a>
+              <div class="action-links">
+                <a href="{{ url_for('document_detail', doc_id=doc.id) }}" class="action-btn" title="Chi tiết"><i class="ph ph-eye"></i></a>
+                <a href="{{ url_for('transfer_ownership', doc_id=doc.id) }}" class="action-btn" title="Chuyển quyền"><i class="ph ph-arrows-left-right"></i></a>
+              </div>
             </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   {% else %}
-    <p>Chưa có chứng từ nào. Hãy bắt đầu bằng việc đăng ký PDF đầu tiên.</p>
+    <div class="empty-state">
+      <i class="ph-fill ph-folder-open"></i>
+      <p>Chưa có chứng từ nào trên hệ thống.</p>
+      <a href="{{ url_for('register_document') }}" class="action-btn"><i class="ph ph-plus"></i> Đăng ký chứng từ đầu tiên</a>
+    </div>
   {% endif %}
 </section>
 {% endblock %}

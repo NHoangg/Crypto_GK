@@ -1,26 +1,32 @@
 {% extends 'base.html' %}
 {% block content %}
 <section>
-  <h2>Xác thực chứng từ</h2>
-  <p>Tải lên lại file PDF để kiểm tra hash có khớp với sổ cái không.</p>
+  <h2><i class="ph-fill ph-check-circle"></i> Xác thực chứng từ</h2>
+  <p>Tải lên lại file PDF để kiểm tra hash có khớp với sổ cái Blockchain (Demo) không.</p>
+  
   <form method="post" enctype="multipart/form-data">
-    <label>Tệp PDF cần xác thực
+    <label>
+      <span><i class="ph ph-file-pdf"></i> Tệp PDF cần xác thực</span>
       <input type="file" name="pdf" accept="application/pdf" required />
     </label>
-    <button type="submit">Xác thực</button>
+    <button type="submit"><i class="ph ph-magnifying-glass"></i> Xác thực hệ thống</button>
   </form>
 
   {% if result %}
   <article class="result ok">
-    <h3>✅ Chứng từ hợp lệ trên hệ thống</h3>
+    <h3><i class="ph-fill ph-shield-check"></i> Chứng từ hợp lệ trên hệ thống</h3>
     <ul>
-      <li><strong>ID chứng từ:</strong> {{ result.id }}</li>
-      <li><strong>File hash:</strong> <span class="mono">{{ result.file_hash }}</span></li>
-      <li><strong>Người khởi tạo:</strong> {{ result.creator }}</li>
-      <li><strong>Chủ sở hữu hiện tại:</strong> {{ result.owner }}</li>
-      <li><strong>Timestamp đăng ký:</strong> {{ result.chain_timestamp }}</li>
-      <li><strong>Tx hash:</strong> <span class="mono">{{ result.tx_hash }}</span></li>
+      <li><strong><i class="ph ph-identification-card"></i> ID chứng từ:</strong> <span><span class="badge badge-blue">#{{ result.id }}</span></span></li>
+      <li><strong><i class="ph ph-hash"></i> File hash:</strong> <span class="mono">{{ result.file_hash }}</span></li>
+      <li><strong><i class="ph ph-user"></i> Người khởi tạo:</strong> <span>{{ result.creator }}</span></li>
+      <li><strong><i class="ph ph-user-focus"></i> Chủ sở hữu hiện tại:</strong> <span>{{ result.owner }}</span></li>
+      <li><strong><i class="ph ph-clock"></i> Timestamp đăng ký:</strong> <span>{{ result.chain_timestamp }}</span></li>
+      <li><strong><i class="ph ph-link"></i> Tx hash:</strong> <span class="mono">{{ result.tx_hash }}</span></li>
     </ul>
+    
+    <div style="margin-top: 1.5rem;">
+      <a href="{{ url_for('document_detail', doc_id=result.id) }}" class="action-btn"><i class="ph ph-eye"></i> Xem chi tiết chứng từ</a>
+    </div>
   </article>
   {% endif %}
 </section>
