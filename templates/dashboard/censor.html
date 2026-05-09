@@ -1,0 +1,92 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+  <h1>
+    <i class="ph-fill {{ current_user.role_icon }}"></i>
+    Đơn vị Kiểm duyệt
+  </h1>
+  <p>Kiểm duyệt và xác thực nội dung chứng từ</p>
+</div>
+
+<!-- Statistics -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <h3>Chờ kiểm duyệt</h3>
+    <div class="value">{{ stats.pending_review }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>Đã phê duyệt</h3>
+    <div class="value">{{ stats.approved_by_me }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>Bị từ chối</h3>
+    <div class="value">{{ stats.rejected }}</div>
+  </div>
+</div>
+
+<!-- Action Cards -->
+<h2 class="section-title">
+  <i class="ph ph-lightning-charge"></i>
+  Các hành động
+</h2>
+<div class="actions-grid">
+  {% for action in actions %}
+  <a href="{{ action.url }}" class="action-card" style="border-top-color: {{ action.color }}">
+    <i class="ph-fill {{ action.icon }}" style="color: {{ action.color }}"></i>
+    <h3>{{ action.title }}</h3>
+    <p>{{ action.description }}</p>
+    {% if action.badge %}
+    <span class="action-badge">{{ action.badge }} chứng từ</span>
+    {% endif %}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Documents Waiting for Review -->
+{% if pending_docs %}
+<h2 class="section-title">
+  <i class="ph ph-warning-circle"></i>
+  Chứng từ cần kiểm duyệt ({{ pending_docs|length }})
+</h2>
+<div class="documents-list">
+  {% for doc in pending_docs %}
+  <div class="document-item">
+    <div class="document-info">
+      <div class="document-title">
+        <a href="{{ url_for('document.document_detail', doc_id=doc.id) }}" style="text-decoration: none; color: inherit;">
+          {{ doc.filename }}
+        </a>
+      </div>
+      <div class="document-meta">
+        ID: #{{ doc.id }} • Tạo bởi: {{ doc.creator }} • Tạo lúc: {{ doc.created_at }}
+      </div>
+    </div>
+    <a href="{{ url_for('document.document_detail', doc_id=doc.id) }}" class="action-btn" style="margin: 0; width: auto;">
+      Kiểm duyệt
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <i class="ph ph-check-circle"></i>
+  <p>Không có chứng từ nào cần kiểm duyệt</p>
+</div>
+{% endif %}
+
+<!-- Information Box -->
+<div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 1.5rem; border-radius: 8px; margin-top: 2rem;">
+  <h3 style="margin-top: 0; color: #92400e;">
+    <i class="ph ph-info"></i>
+    Hướng dẫn kiểm duyệt
+  </h3>
+  <ul style="color: #92400e;">
+    <li>Kiểm tra tính toàn vẹn của tài liệu</li>
+    <li>Xác nhận nội dung phù hợp với quy định</li>
+    <li>Bạn có thể phê duyệt hoặc từ chối tài liệu</li>
+    <li>Nếu phê duyệt, tài liệu sẽ đi đến Nhà phát hành</li>
+    <li>Nếu từ chối, ghi rõ lý do để tác giả có thể sửa</li>
+  </ul>
+</div>
+{% endblock %}

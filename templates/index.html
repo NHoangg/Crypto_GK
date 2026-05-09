@@ -1,18 +1,61 @@
 {% extends 'base.html' %}
 {% block content %}
 <section>
-  <h2><i class="ph-fill ph-files"></i> Danh sách chứng từ đã đăng ký</h2>
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.5rem;">
+    <h2 style="margin:0;"><i class="ph-fill ph-files"></i> Danh sách chứng từ đã đăng ký</h2>
+    {% if current_user.is_authenticated and current_user.role == 'Legal Authority' and documents %}
+    <button type="button" class="action-btn btn-danger" id="btn-delete-all" onclick="openDeleteAllModal()" style="padding:0.5rem 1.1rem; font-size:0.9rem;">
+      <i class="ph ph-trash"></i> Xóa tất cả
+    </button>
+    {% endif %}
+  </div>
+
+  <!-- Luồng phê duyệt trực quan -->
+  <div class="flow-steps">
+    <div class="flow-step">
+      <i class="ph ph-pencil-simple" style="color:#60a5fa;"></i>
+      <span>Content Creator</span>
+      <small>Đăng ký chứng từ</small>
+    </div>
+    <i class="ph ph-arrow-right flow-arrow"></i>
+    <div class="flow-step">
+      <i class="ph ph-magnifying-glass" style="color:#f59e0b;"></i>
+      <span>Censor</span>
+      <small>Kiểm duyệt nội dung</small>
+    </div>
+    <i class="ph ph-arrow-right flow-arrow"></i>
+    <div class="flow-step">
+      <i class="ph ph-broadcast" style="color:#10b981;"></i>
+      <span>Publisher</span>
+      <small>Phê duyệt & ký số</small>
+    </div>
+    <i class="ph ph-arrow-right flow-arrow"></i>
+    <div class="flow-step">
+      <i class="ph ph-user" style="color:#a78bfa;"></i>
+      <span>Customer</span>
+      <small>Nhận quyền sở hữu</small>
+    </div>
+    <i class="ph ph-arrow-right flow-arrow"></i>
+    <div class="flow-step">
+      <i class="ph ph-scales" style="color:#f87171;"></i>
+      <span>Legal Authority</span>
+      <small>Giám sát & kiểm soát</small>
+    </div>
+  </div>
+
   {% if documents %}
+  <div class="table-wrapper">
     <table>
       <thead>
         <tr>
           <th>ID</th>
           <th>File</th>
           <th>Hash (SHA-256)</th>
-          <th>Chủ sở hữu hiện tại</th>
-          <th>Người khởi tạo</th>
+          <th>Chủ sở hữu</th>
+          <th>Người tạo</th>
           <th>Ngày tạo</th>
-          <th>Transfers</th>
+          <th>Trạng thái</th>
+          <th>TF</th>
           <th>Hành động</th>
         </tr>
       </thead>
@@ -20,28 +63,78 @@
         {% for doc in documents %}
           <tr>
             <td><span class="badge badge-blue">#{{ doc.id }}</span></td>
-            <td><a href="{{ url_for('uploaded_file', filename=doc.filename) }}"><i class="ph ph-file-pdf" style="margin-right: 4px;"></i>{{ doc.filename }}</a></td>
-            <td><span class="mono">{{ doc.file_hash[:12] }}...</span></td>
+            <td class="col-file"><a href="{{ url_for('document.uploaded_file', filename=doc.filename) }}" title="{{ doc.filename }}"><i class="ph ph-file-pdf" style="margin-right: 4px;"></i>{{ doc.filename }}</a></td>
+            <td><span class="mono">{{ doc.file_hash[:10] }}...</span></td>
             <td>{{ doc.owner }}</td>
             <td>{{ doc.creator }}</td>
             <td>{{ doc.created_at[:16] }}</td>
+            <td>
+              {% if doc.approval_status == 'Approved' %}
+                <span class="badge-status badge-approved"><i class="ph ph-check-circle"></i> Đã phê duyệt</span>
+              {% elif doc.approval_status == 'Rejected' %}
+                <span class="badge-status badge-rejected"><i class="ph ph-x-circle"></i> Từ chối</span>
+              {% elif doc.approval_status == 'Pending Publisher Approval' %}
+                <span class="badge-status badge-publisher"><i class="ph ph-broadcast"></i> Chờ Publisher</span>
+              {% else %}
+                <span class="badge-status badge-censor"><i class="ph ph-magnifying-glass"></i> Chờ Censor</span>
+              {% endif %}
+            </td>
             <td><span class="badge badge-purple">{{ doc.transfer_count }}</span></td>
             <td>
               <div class="action-links">
-                <a href="{{ url_for('document_detail', doc_id=doc.id) }}" class="action-btn" title="Chi tiết"><i class="ph ph-eye"></i></a>
-                <a href="{{ url_for('transfer_ownership', doc_id=doc.id) }}" class="action-btn" title="Chuyển quyền"><i class="ph ph-arrows-left-right"></i></a>
+                <a href="{{ url_for('document.document_detail', doc_id=doc.id) }}" class="action-btn" title="Chi tiết"><i class="ph ph-eye"></i></a>
+                <a href="{{ url_for('transfer.transfer_ownership', doc_id=doc.id) }}" class="action-btn" title="Chuyển quyền"><i class="ph ph-arrows-left-right"></i></a>
+                {% if current_user.is_authenticated and current_user.role == 'Legal Authority' %}
+                <form method="post" action="{{ url_for('admin.delete_document', doc_id=doc.id) }}" style="display:inline;" onsubmit="return confirm('Xóa chứng từ #{{ doc.id }}?\nHành động này không thể hoàn tác!');">
+                  <button type="submit" class="action-btn btn-danger" title="Xóa"><i class="ph ph-trash"></i></button>
+                </form>
+                {% endif %}
               </div>
             </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
+  </div>
   {% else %}
     <div class="empty-state">
       <i class="ph-fill ph-folder-open"></i>
       <p>Chưa có chứng từ nào trên hệ thống.</p>
-      <a href="{{ url_for('register_document') }}" class="action-btn"><i class="ph ph-plus"></i> Đăng ký chứng từ đầu tiên</a>
+      <a href="{{ url_for('document.register_document') }}" class="action-btn"><i class="ph ph-plus"></i> Đăng ký chứng từ đầu tiên</a>
     </div>
   {% endif %}
 </section>
+
+{% if current_user.is_authenticated and current_user.role == 'Legal Authority' %}
+<!-- Modal xác nhận Xóa tất cả -->
+<div id="delete-all-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:#1e2235; border:1px solid rgba(239,68,68,0.4); border-radius:14px; padding:2rem; max-width:460px; width:92%; box-shadow:0 8px 40px rgba(0,0,0,0.6);">
+    <h3 style="margin:0 0 0.75rem; color:#f87171; display:flex; align-items:center; gap:0.6rem;">
+      <i class="ph-fill ph-warning-octagon"></i> Xóa toàn bộ chứng từ
+    </h3>
+    <p style="margin:0 0 0.5rem; color:#94a3b8; font-size:0.95rem; line-height:1.6;">
+      Hành động này sẽ xóa vĩnh viễn <strong style="color:#f1f5f9;">tất cả chứng từ</strong>, file PDF và toàn bộ lịch sử audit.
+    </p>
+    <p style="margin:0 0 1.5rem; color:#f87171; font-size:0.875rem; display:flex; align-items:center; gap:0.4rem;">
+      <i class="ph ph-warning"></i> Chỉ Cơ quan pháp lý mới có quyền thực hiện thao tác này.
+    </p>
+    <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+      <button type="button" class="action-btn" onclick="closeDeleteAllModal()"><i class="ph ph-x"></i> Hủy</button>
+      <form method="post" action="{{ url_for('admin.delete_all_documents') }}" style="margin:0; padding:0; background:none; border:none; display:inline;">
+        <button type="submit" class="action-btn btn-danger" style="padding:0.5rem 1.2rem;">
+          <i class="ph ph-trash"></i> Xóa tất cả vĩnh viễn
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openDeleteAllModal() { document.getElementById('delete-all-modal').style.display = 'flex'; }
+  function closeDeleteAllModal() { document.getElementById('delete-all-modal').style.display = 'none'; }
+  document.getElementById('delete-all-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteAllModal();
+  });
+</script>
+{% endif %}
 {% endblock %}

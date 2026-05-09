@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<section>
+  <h2><i class="ph-fill ph-sign-in"></i> Đăng nhập hệ thống</h2>
+  <p>Chọn vai trò đại diện cho một trong <strong style="color:#f1f5f9;">5 bên tham gia</strong> trong quy trình quản lý và phê duyệt chứng từ.</p>
+
+  <!-- Party cards -->
+  <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:1rem; margin-bottom:2rem;">
+    {% for role_key, info in roles.items() %}
+    <div style="background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:1.2rem; text-align:center;">
+      <i class="ph {{ info.icon }}" style="font-size:1.8rem; color:{{ info.color }};"></i>
+      <div style="font-size:0.8rem; font-weight:600; color:{{ info.color }}; margin-top:0.5rem;">{{ role_key }}</div>
+      <div style="font-size:0.72rem; color:#94a3b8; margin-top:0.3rem;">{{ info.label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <form method="post">
+    <label>
+      <span><i class="ph ph-user"></i> Tên người dùng</span>
+      <input type="text" name="name" placeholder="VD: Nguyễn Văn A" required />
+    </label>
+    <label>
+      <span><i class="ph ph-shield-check"></i> Vai trò / Bên tham gia</span>
+      <select name="role" required>
+        <option value="">— Chọn vai trò —</option>
+        {% for role_key, info in roles.items() %}
+        <option value="{{ role_key }}">{{ role_key }} – {{ info.label }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <button type="submit"><i class="ph ph-check-circle"></i> Đăng nhập</button>
+  </form>
+</section>
+{% endblock %}
