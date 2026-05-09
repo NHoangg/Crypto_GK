@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Digital Rights Ledger</title>
+  <title>Digital Rights Ledger – Hệ thống quản lý chứng từ đa bên</title>
+  <meta name="description" content="Hệ thống quản lý chứng từ số mô phỏng mô hình nhiều bên: Công ty sáng tạo nội dung, Nhà phát hành, Đơn vị kiểm duyệt, Khách hàng, Cơ quan pháp lý." />
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
@@ -11,12 +12,28 @@
   <header>
     <div class="logo-container">
       <i class="ph-fill ph-shield-check logo-icon"></i>
-      <h1>Digital Rights Ledger</h1>
+      <div>
+        <h1>Digital Rights Ledger</h1>
+        <span style="font-size:0.7rem; color:#64748b; letter-spacing:0.05em;">HỆ THỐNG QUẢN LÝ CHỨNG TỪ ĐA BÊN</span>
+      </div>
     </div>
     <nav>
-      <a href="{{ url_for('index') }}"><i class="ph ph-house"></i> Trang chủ</a>
-      <a href="{{ url_for('register_document') }}"><i class="ph ph-file-plus"></i> Đăng ký chứng từ</a>
-      <a href="{{ url_for('verify_document') }}"><i class="ph ph-check-circle"></i> Xác thực</a>
+      <a href="{{ url_for('document.index') }}"><i class="ph ph-house"></i> Trang chủ</a>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('dashboard.dashboard') }}"><i class="ph ph-monitor"></i> Dashboard</a>
+        <a href="{{ url_for('document.register_document') }}"><i class="ph ph-file-plus"></i> Đăng ký</a>
+      {% endif %}
+      <a href="{{ url_for('verification.verify_document') }}"><i class="ph ph-check-circle"></i> Xác thực</a>
+      {% if current_user.is_authenticated %}
+        <span class="user-badge" style="border-color:{{ current_user.role_color }}33; color:{{ current_user.role_color }};">
+          <i class="ph {{ current_user.role_icon }}"></i>
+          {{ current_user.name }}
+          <span style="font-size:0.72rem; opacity:0.8;">({{ current_user.role }})</span>
+        </span>
+        <a href="{{ url_for('auth.logout') }}"><i class="ph ph-sign-out"></i> Đăng xuất</a>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}"><i class="ph ph-sign-in"></i> Đăng nhập</a>
+      {% endif %}
     </nav>
   </header>
 
@@ -26,13 +43,9 @@
         <ul class="flash-list">
           {% for category, message in messages %}
             <li class="flash {{ category }}">
-              {% if category == 'success' %}
-                <i class="ph-fill ph-check-circle"></i>
-              {% elif category == 'error' %}
-                <i class="ph-fill ph-warning-circle"></i>
-              {% else %}
-                <i class="ph-fill ph-info"></i>
-              {% endif %}
+              {% if category == 'success' %}<i class="ph-fill ph-check-circle"></i>
+              {% elif category == 'error' %}<i class="ph-fill ph-warning-circle"></i>
+              {% else %}<i class="ph-fill ph-info"></i>{% endif %}
               {{ message }}
             </li>
           {% endfor %}
@@ -42,5 +55,16 @@
 
     {% block content %}{% endblock %}
   </main>
+
+  <!-- Party legend footer -->
+  <footer>
+    <div class="party-legend">
+      {% for role_key, info in ROLES.items() %}
+      <span class="party-chip" style="border-color:{{ info.color }}33; color:{{ info.color }};">
+        <i class="ph {{ info.icon }}"></i> {{ info.label }}
+      </span>
+      {% endfor %}
+    </div>
+  </footer>
 </body>
 </html>

@@ -1,0 +1,95 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+  <h1>
+    <i class="ph-fill {{ current_user.role_icon }}"></i>
+    Khách hàng
+  </h1>
+  <p>Quản lý quyền sở hữu chứng từ và xác thực tài liệu</p>
+</div>
+
+<!-- Statistics -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <h3>Tổng chứng từ sở hữu</h3>
+    <div class="value">{{ stats.total_owned }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>Đã phê duyệt</h3>
+    <div class="value">{{ stats.approved }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>Đang xử lý</h3>
+    <div class="value">{{ stats.pending }}</div>
+  </div>
+</div>
+
+<!-- Action Cards -->
+<h2 class="section-title">
+  <i class="ph ph-lightning-charge"></i>
+  Các hành động
+</h2>
+<div class="actions-grid">
+  {% for action in actions %}
+  <a href="{{ action.url }}" class="action-card" style="border-top-color: {{ action.color }}">
+    <i class="ph-fill {{ action.icon }}" style="color: {{ action.color }}"></i>
+    <h3>{{ action.title }}</h3>
+    <p>{{ action.description }}</p>
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Owned Documents -->
+{% if owned_docs %}
+<h2 class="section-title">
+  <i class="ph ph-briefcase"></i>
+  Chứng từ của tôi ({{ owned_docs|length }})
+</h2>
+<div class="documents-list">
+  {% for doc in owned_docs %}
+  <div class="document-item">
+    <div class="document-info">
+      <div class="document-title">
+        <a href="{{ url_for('document.document_detail', doc_id=doc.id) }}" style="text-decoration: none; color: inherit;">
+          {{ doc.filename }}
+        </a>
+      </div>
+      <div class="document-meta">
+        ID: #{{ doc.id }} • Tác giả: {{ doc.creator }} • Chuyển giao: {{ doc.transfer_count }} lần
+      </div>
+    </div>
+    <span class="document-status" style="background: 
+      {% if doc.approval_status == 'Approved' %}
+        #d1fae5; color: #065f46;
+      {% elif doc.approval_status == 'Rejected' %}
+        #fee2e2; color: #7f1d1d;
+      {% else %}
+        #fef3c7; color: #92400e;
+      {% endif %}
+    ">{{ doc.approval_status }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <i class="ph ph-briefcase"></i>
+  <p>Bạn chưa sở hữu chứng từ nào</p>
+</div>
+{% endif %}
+
+<!-- Information Box -->
+<div style="background: #e0e7ff; border-left: 4px solid #a78bfa; padding: 1.5rem; border-radius: 8px; margin-top: 2rem;">
+  <h3 style="margin-top: 0; color: #4338ca;">
+    <i class="ph ph-info"></i>
+    Hướng dẫn khách hàng
+  </h3>
+  <ul style="color: #4338ca;">
+    <li>Xem danh sách chứng từ bạn sở hữu</li>
+    <li>Bạn có thể yêu cầu xác thực tài liệu bất kỳ lúc nào</li>
+    <li>Chuyển giao quyền sở hữu cho người nhận tiếp theo</li>
+    <li>Xem toàn bộ lịch sử chuyển giao của tài liệu</li>
+    <li>Blockchain sẽ ghi lại tất cả giao dịch</li>
+  </ul>
+</div>
+{% endblock %}

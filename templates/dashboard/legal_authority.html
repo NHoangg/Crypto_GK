@@ -1,0 +1,158 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+  <h1>
+    <i class="ph-fill {{ current_user.role_icon }}"></i>
+    Cơ quan Pháp lý
+  </h1>
+  <p>Giám sát toàn bộ hệ thống và quản lý quyền hạn tối cao</p>
+</div>
+
+<!-- Statistics -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <h3>Tổng chứng từ</h3>
+    <div class="value">{{ stats.total_documents }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>Đã phê duyệt</h3>
+    <div class="value">{{ stats.approved }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>Bị từ chối</h3>
+    <div class="value">{{ stats.rejected }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>Đang xử lý</h3>
+    <div class="value">{{ stats.pending }}</div>
+  </div>
+</div>
+
+<!-- Action Cards -->
+<h2 class="section-title">
+  <i class="ph ph-lightning-charge"></i>
+  Các hành động quản trị
+</h2>
+<div class="actions-grid">
+  {% for action in actions %}
+  <a href="{{ action.url }}" class="action-card" style="border-top-color: {{ action.color }}">
+    <i class="ph-fill {{ action.icon }}" style="color: {{ action.color }}"></i>
+    <h3>{{ action.title }}</h3>
+    <p>{{ action.description }}</p>
+    {% if action.badge %}
+    <span class="action-badge">{{ action.badge }}</span>
+    {% endif %}
+  </a>
+  {% endfor %}
+</div>
+
+<!-- System Status -->
+<h2 class="section-title">
+  <i class="ph ph-activity"></i>
+  Trạng thái hệ thống
+</h2>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+  <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+    <h3 style="margin: 0 0 1rem 0; color: #333;">
+      <i class="ph ph-check-circle" style="color: #10b981;"></i>
+      Hoạt động bình thường
+    </h3>
+    <p style="margin: 0; color: #666;">Hệ thống blockchain đang hoạt động ổn định</p>
+  </div>
+  <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+    <h3 style="margin: 0 0 1rem 0; color: #333;">
+      <i class="ph ph-database" style="color: #3b82f6;"></i>
+      Dữ liệu an toàn
+    </h3>
+    <p style="margin: 0; color: #666;">Tất cả tài liệu được bảo vệ bằng SHA-256</p>
+  </div>
+  <div style="background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+    <h3 style="margin: 0 0 1rem 0; color: #333;">
+      <i class="ph ph-shield-check" style="color: #8b5cf6;"></i>
+      Quyền kiểm soát toàn quyền
+    </h3>
+    <p style="margin: 0; color: #666;">Bạn có quyền can thiệp bất kỳ lúc nào</p>
+  </div>
+</div>
+
+<!-- Pending Documents -->
+{% if pending_docs %}
+<h2 class="section-title">
+  <i class="ph ph-warning"></i>
+  Chứng từ đang xử lý ({{ pending_docs|length }})
+</h2>
+<div class="documents-list">
+  {% for doc in pending_docs %}
+  <div class="document-item">
+    <div class="document-info">
+      <div class="document-title">
+        <a href="{{ url_for('document.document_detail', doc_id=doc.id) }}" style="text-decoration: none; color: inherit;">
+          {{ doc.filename }}
+        </a>
+      </div>
+      <div class="document-meta">
+        ID: #{{ doc.id }} • Tác giả: {{ doc.creator }} • Chủ sở hữu: {{ doc.owner }} • Trạng thái: {{ doc.approval_status }}
+      </div>
+    </div>
+    <a href="{{ url_for('document.document_detail', doc_id=doc.id) }}" class="action-btn" style="margin: 0; width: auto;">
+      Xem chi tiết
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Recent Approved Documents -->
+{% if approved_docs %}
+<h2 class="section-title">
+  <i class="ph ph-check-circle"></i>
+  Chứng từ đã phê duyệt gần đây ({{ approved_docs|length }})
+</h2>
+<div class="documents-list">
+  {% for doc in approved_docs %}
+  <div class="document-item">
+    <div class="document-info">
+      <div class="document-title">
+        <a href="{{ url_for('document.document_detail', doc_id=doc.id) }}" style="text-decoration: none; color: inherit;">
+          {{ doc.filename }}
+        </a>
+      </div>
+      <div class="document-meta">
+        ID: #{{ doc.id }} • Ký số bởi: {{ doc.approved_by }} • Lúc: {{ doc.approved_at }}
+      </div>
+    </div>
+    <span class="document-status status-approved">{{ doc.approval_status }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Powers & Responsibilities -->
+<div style="background: #fecaca; border-left: 4px solid #dc2626; padding: 1.5rem; border-radius: 8px; margin-top: 2rem;">
+  <h3 style="margin-top: 0; color: #7f1d1d;">
+    <i class="ph ph-scales"></i>
+    Quyền hạn và Trách nhiệm
+  </h3>
+  <ul style="color: #7f1d1d;">
+    <li><strong>Giám sát toàn bộ hệ thống</strong> - Xem tất cả chứng từ và hoạt động</li>
+    <li><strong>Phê duyệt khẩn cấp</strong> - Override quy trình phê duyệt khi cần</li>
+    <li><strong>Xóa tài liệu</strong> - Xóa chứng từ khỏi hệ thống (quyền toàn quyền)</li>
+    <li><strong>Truy cập audit log</strong> - Xem toàn bộ lịch sử hoạt động</li>
+    <li><strong>Kiểm toán</strong> - Truy vết mọi giao dịch trên blockchain</li>
+    <li><strong>Chịu trách nhiệm pháp lý</strong> - Giám sát tuân thủ pháp luật</li>
+  </ul>
+</div>
+
+<!-- Security Notice -->
+<div style="background: #dbeafe; border-left: 4px solid #0284c7; padding: 1.5rem; border-radius: 8px; margin-top: 1rem;">
+  <h3 style="margin-top: 0; color: #075985;">
+    <i class="ph ph-warning-circle"></i>
+    Lưu ý bảo mật
+  </h3>
+  <p style="margin: 0; color: #075985;">
+    <strong>Tất cả hành động của bạn sẽ được ghi lại trong audit log.</strong> 
+    Hãy thực hiện các hành động này một cách thận trọng. Xóa tài liệu là vĩnh viễn và không thể hoàn tác.
+  </p>
+</div>
+{% endblock %}

@@ -2,18 +2,18 @@
 {% block content %}
 <section>
   <h2><i class="ph-fill ph-file-text"></i> Chi tiết chứng từ <span class="badge badge-blue" style="margin-left: 8px;">#{{ document.id }}</span></h2>
-  
+
   <ul class="detail-list">
     <li>
       <strong><i class="ph ph-file-pdf"></i> File đính kèm</strong>
-      <a href="{{ url_for('uploaded_file', filename=document.filename) }}">{{ document.filename }}</a>
+      <a href="{{ url_for('document.uploaded_file', filename=document.filename) }}">{{ document.filename }}</a>
     </li>
     <li>
       <strong><i class="ph ph-hash"></i> Mã băm (Hash)</strong>
       <span class="mono">{{ document.file_hash }}</span>
     </li>
     <li>
-      <strong><i class="ph ph-user"></i> Người khởi tạo</strong>
+      <strong><i class="ph ph-pencil-simple"></i> Người khởi tạo (Content Creator)</strong>
       <span>{{ document.creator }}</span>
     </li>
     <li>
@@ -25,6 +25,34 @@
       <span class="mono">{{ document.tx_hash }}</span>
     </li>
     <li>
+      <strong><i class="ph ph-badge"></i> Trạng thái phê duyệt</strong>
+      {% if document.approval_status == 'Approved' %}
+        <span class="badge-status badge-approved"><i class="ph ph-check-circle"></i> Đã phê duyệt</span>
+      {% elif document.approval_status == 'Rejected' %}
+        <span class="badge-status badge-rejected"><i class="ph ph-x-circle"></i> Bị từ chối</span>
+      {% elif document.approval_status == 'Pending Publisher Approval' %}
+        <span class="badge-status badge-publisher"><i class="ph ph-broadcast"></i> Chờ Nhà phát hành</span>
+      {% else %}
+        <span class="badge-status badge-censor"><i class="ph ph-magnifying-glass"></i> Chờ Đơn vị kiểm duyệt</span>
+      {% endif %}
+    </li>
+    {% if document.approved_by %}
+    <li>
+      <strong><i class="ph ph-signature"></i> Phê duyệt bởi (Publisher)</strong>
+      <span>{{ document.approved_by }} lúc {{ document.approved_at }}</span>
+    </li>
+    {% endif %}
+    {% if document.rejected_by %}
+    <li>
+      <strong><i class="ph ph-x-circle"></i> Từ chối bởi</strong>
+      <span>{{ document.rejected_by }} lúc {{ document.rejected_at }}</span>
+    </li>
+    <li>
+      <strong><i class="ph ph-note"></i> Lý do từ chối</strong>
+      <span>{{ document.rejection_reason }}</span>
+    </li>
+    {% endif %}
+    <li>
       <strong><i class="ph ph-cube"></i> Block Index</strong>
       <span>{{ document.block_index }}</span>
     </li>
@@ -33,6 +61,66 @@
       <span>{{ document.created_at }}</span>
     </li>
   </ul>
+
+  <!-- Quy trình phê duyệt đa bên -->
+  {% set status = document.approval_status %}
+  {% set role = current_user.role %}
+  {% set can_censor_approve = (role == 'Censor' and status == 'Pending Censor Review') %}
+  {% set can_publisher_approve = (role == 'Publisher' and status == 'Pending Publisher Approval') %}
+  {% set can_legal_approve = (role == 'Legal Authority' and status not in ('Approved', 'Rejected')) %}
+  {% set can_approve = can_censor_approve or can_publisher_approve or can_legal_approve %}
+
+  {% set can_censor_reject = (role == 'Censor' and status == 'Pending Censor Review') %}
+  {% set can_publisher_reject = (role == 'Publisher' and status == 'Pending Publisher Approval') %}
+  {% set can_legal_reject = (role == 'Legal Authority' and status not in ('Approved', 'Rejected')) %}
+  {% set can_reject = can_censor_reject or can_publisher_reject or can_legal_reject %}
+
+  {% if current_user.is_authenticated and (can_approve or can_reject) %}
+  <section style="margin-top:0;">
+    <h3><i class="ph-fill ph-briefcase"></i> Quy trình phê duyệt đa bên</h3>
+
+    <!-- Trạng thái hiện tại & vai trò cần hành động -->
+    <div class="approval-banner">
+      {% if status == 'Pending Censor Review' %}
+        <i class="ph ph-magnifying-glass" style="color:#f59e0b; font-size:1.4rem;"></i>
+        <div>
+          <strong style="color:#f59e0b;">Đang chờ Đơn vị kiểm duyệt</strong>
+          <p style="margin:0.2rem 0 0; font-size:0.85rem;">Censor cần xem xét nội dung trước khi chuyển sang Nhà phát hành.</p>
+        </div>
+      {% elif status == 'Pending Publisher Approval' %}
+        <i class="ph ph-broadcast" style="color:#10b981; font-size:1.4rem;"></i>
+        <div>
+          <strong style="color:#10b981;">Đang chờ Nhà phát hành phê duyệt</strong>
+          <p style="margin:0.2rem 0 0; font-size:0.85rem;">Publisher cần ký số và phê duyệt cuối cùng.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if can_approve %}
+    <form method="post" action="{{ url_for('approval.review_document', doc_id=document.id) }}" class="review-form">
+      <input type="hidden" name="action" value="approve" />
+      {% if role == 'Censor' %}
+        <button type="submit" class="action-btn btn-approve"><i class="ph ph-check-circle"></i> Xác nhận kiểm duyệt → Chuyển Publisher</button>
+      {% elif role == 'Publisher' %}
+        <button type="submit" class="action-btn btn-approve"><i class="ph ph-signature"></i> Ký số & Phê duyệt chính thức</button>
+      {% else %}
+        <button type="submit" class="action-btn btn-approve"><i class="ph ph-scales"></i> Phê duyệt khẩn (Legal Authority)</button>
+      {% endif %}
+    </form>
+    {% endif %}
+
+    {% if can_reject %}
+    <form method="post" action="{{ url_for('approval.review_document', doc_id=document.id) }}" class="review-form reject">
+      <input type="hidden" name="action" value="reject" />
+      <label>
+        <span>Lý do từ chối</span>
+        <textarea name="reason" placeholder="Nhập lý do từ chối (nếu có)"></textarea>
+      </label>
+      <button type="submit" class="action-btn btn-danger"><i class="ph ph-x-circle"></i> Từ chối & Trả lại</button>
+    </form>
+    {% endif %}
+  </section>
+  {% endif %}
 
   <h3><i class="ph-fill ph-clock-counter-clockwise"></i> Lịch sử chuyển quyền sở hữu</h3>
   {% if transfers %}
@@ -66,10 +154,82 @@
       <p>Chưa có giao dịch chuyển quyền nào.</p>
     </div>
   {% endif %}
-  
-  <div style="margin-top: 2rem;">
-    <a href="{{ url_for('index') }}" class="action-btn"><i class="ph ph-arrow-left"></i> Quay lại</a>
-    <a href="{{ url_for('transfer_ownership', doc_id=document.id) }}" class="action-btn"><i class="ph ph-arrows-left-right"></i> Chuyển quyền</a>
+
+  <section>
+    <h3><i class="ph-fill ph-list-check"></i> Lịch sử audit</h3>
+    {% if audit_logs %}
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Hành động</th>
+          <th>Người thực hiện</th>
+          <th>Vai trò</th>
+          <th>Chi tiết</th>
+          <th>Thời gian</th>
+          <th>Tx Hash</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in audit_logs %}
+        <tr>
+          <td><span class="badge badge-purple">{{ loop.index }}</span></td>
+          <td>{{ log.action }}</td>
+          <td>{{ log.performed_by }}</td>
+          <td>
+            {% set rinfo = ROLES.get(log.role, {}) %}
+            {% if rinfo %}
+              <span style="color:{{ rinfo.color }}; font-size:0.8rem;">
+                <i class="ph {{ rinfo.icon }}"></i> {{ log.role }}
+              </span>
+            {% else %}
+              {{ log.role }}
+            {% endif %}
+          </td>
+          <td>{{ log.details }}</td>
+          <td>{{ log.created_at[:16] }}</td>
+          <td><span class="mono">{{ log.tx_hash[:16] if log.tx_hash else '-' }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state" style="padding: 2rem;">
+      <i class="ph ph-clock"></i>
+      <p>Chưa có hoạt động audit nào.</p>
+    </div>
+    {% endif %}
+  </section>
+
+  <div style="margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center;">
+    <a href="{{ url_for('document.index') }}" class="action-btn"><i class="ph ph-arrow-left"></i> Quay lại</a>
+    <a href="{{ url_for('transfer.transfer_ownership', doc_id=document.id) }}" class="action-btn"><i class="ph ph-arrows-left-right"></i> Chuyển quyền</a>
+    {% if current_user.is_authenticated and current_user.role == 'Legal Authority' %}
+    <button type="button" class="action-btn btn-danger" id="btn-delete-doc" onclick="confirmDelete()">
+      <i class="ph ph-trash"></i> Xóa tài liệu
+    </button>
+    <form id="delete-form" method="post" action="{{ url_for('admin.delete_document', doc_id=document.id) }}" style="display:none;"></form>
+    {% endif %}
   </div>
+
+  <!-- Modal xác nhận xóa -->
+  <div id="delete-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:var(--surface,#1e2235); border:1px solid var(--border,#2e3450); border-radius:12px; padding:2rem; max-width:420px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.5);">
+      <h3 style="margin:0 0 1rem; color:#f87171; display:flex; align-items:center; gap:0.5rem;"><i class="ph-fill ph-warning"></i> Xác nhận xóa</h3>
+      <p style="margin:0 0 1.5rem; line-height:1.6;">Bạn có chắc muốn xóa chứng từ <strong>#{{ document.id }} - {{ document.filename }}</strong>?<br><span style="color:#f87171; font-size:0.875rem;">⚠ Hành động này không thể hoàn tác. File và toàn bộ lịch sử sẽ bị xóa vĩnh viễn.</span></p>
+      <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+        <button type="button" class="action-btn" onclick="closeDeleteModal()"><i class="ph ph-x"></i> Hủy</button>
+        <button type="button" class="action-btn btn-danger" onclick="document.getElementById('delete-form').submit();"><i class="ph ph-trash"></i> Xóa vĩnh viễn</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function confirmDelete() { document.getElementById('delete-modal').style.display = 'flex'; }
+    function closeDeleteModal() { document.getElementById('delete-modal').style.display = 'none'; }
+    document.getElementById('delete-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeDeleteModal();
+    });
+  </script>
 </section>
 {% endblock %}

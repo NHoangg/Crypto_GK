@@ -1,0 +1,101 @@
+{% extends 'dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-header">
+  <h1>
+    <i class="ph-fill {{ current_user.role_icon }}"></i>
+    Công ty Sáng tạo Nội dung
+  </h1>
+  <p>Đăng ký, quản lý và theo dõi chứng từ của bạn</p>
+</div>
+
+<!-- Statistics -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <h3>Tổng chứng từ đã tạo</h3>
+    <div class="value">{{ stats.total_created }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>Chờ kiểm duyệt</h3>
+    <div class="value">{{ stats.pending_review }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>Đã phê duyệt</h3>
+    <div class="value">{{ stats.approved }}</div>
+  </div>
+  <div class="stat-card">
+    <h3>Bị từ chối</h3>
+    <div class="value">{{ stats.rejected }}</div>
+  </div>
+</div>
+
+<!-- Action Cards -->
+<h2 class="section-title">
+  <i class="ph ph-lightning-charge"></i>
+  Các hành động
+</h2>
+<div class="actions-grid">
+  {% for action in actions %}
+  <a href="{{ action.url }}" class="action-card" style="border-top-color: {{ action.color }}">
+    <i class="ph-fill {{ action.icon }}" style="color: {{ action.color }}"></i>
+    <h3>{{ action.title }}</h3>
+    <p>{{ action.description }}</p>
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Documents Waiting for Review -->
+{% if pending_docs %}
+<h2 class="section-title">
+  <i class="ph ph-hourglass-medium"></i>
+  Chứng từ đang chờ kiểm duyệt ({{ pending_docs|length }})
+</h2>
+<div class="documents-list">
+  {% for doc in pending_docs %}
+  <div class="document-item">
+    <div class="document-info">
+      <div class="document-title">
+        <a href="{{ url_for('document.document_detail', doc_id=doc.id) }}" style="text-decoration: none; color: inherit;">
+          {{ doc.filename }}
+        </a>
+      </div>
+      <div class="document-meta">
+        ID: #{{ doc.id }} • Hash: {{ doc.file_hash[:16] }}...
+      </div>
+    </div>
+    <span class="document-status status-pending">{{ doc.approval_status }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <i class="ph ph-check-circle"></i>
+  <p>Không có chứng từ nào đang chờ kiểm duyệt</p>
+</div>
+{% endif %}
+
+<!-- Approved Documents -->
+{% if approved_docs %}
+<h2 class="section-title">
+  <i class="ph ph-check-double"></i>
+  Chứng từ đã phê duyệt ({{ approved_docs|length }})
+</h2>
+<div class="documents-list">
+  {% for doc in approved_docs %}
+  <div class="document-item">
+    <div class="document-info">
+      <div class="document-title">
+        <a href="{{ url_for('document.document_detail', doc_id=doc.id) }}" style="text-decoration: none; color: inherit;">
+          {{ doc.filename }}
+        </a>
+      </div>
+      <div class="document-meta">
+        ID: #{{ doc.id }} • Phê duyệt bởi: {{ doc.approved_by }}
+      </div>
+    </div>
+    <span class="document-status status-approved">{{ doc.approval_status }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
